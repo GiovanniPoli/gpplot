@@ -88,7 +88,7 @@ gpplot.default = function(x, y = NULL,
   plot + xlab(xlab) + ylab(ylab) + ggtitle(main) + theme_bw() + theme(text = element_text(family = "serif"))
 }
 
-gpplot.matrix = function(Matrix, y = NULL,
+gpplot.matrix = function(Matrix,
                           ...,
                           xlim = NULL, ylim = NULL,
                           main = NULL,
@@ -97,7 +97,7 @@ gpplot.matrix = function(Matrix, y = NULL,
                           color_legend_title = NULL,
                           shape_legend_title = NULL){
   gpplot.default(
-    x = x[,1], y = y[,2],
+    x = Matrix[,1], y = Matrix[,2],
     xlim = xlim, ylim = ylim,
     main = main,
     xlab = xlab, ylab = ylab,
@@ -106,28 +106,85 @@ gpplot.matrix = function(Matrix, y = NULL,
     shape_legend_title = shape_legend_title)
 }
 
+gpplot.matrix = function(Matrix,
+                         ...,
+                         xlim = NULL, ylim = NULL,
+                         main = NULL,
+                         xlab = NULL, ylab = NULL,
+                         color = NULL, shape = NULL,
+                         color_legend_title = NULL,
+                         shape_legend_title = NULL){
+  gpplot.default(
+    x = Matrix[,1], y = Matrix[,2],
+    xlim = xlim, ylim = ylim,
+    main = main,
+    xlab = xlab, ylab = ylab,
+    color = color, shape = color,
+    color_legend_title = color_legend_title,
+    shape_legend_title = shape_legend_title)
+}
+
+gpplot.data.frame = function(data,
+                         ...,
+                         xlim = NULL, ylim = NULL,
+                         main = NULL,
+                         xlab = NULL, ylab = NULL,
+                         color = NULL, shape = NULL,
+                         color_legend_title = NULL,
+                         shape_legend_title = NULL){
+  gpplot.default(
+    x = data[,colnames(data)[1]], y = data[,colnames(data)[2]],
+    xlim = xlim, ylim = ylim,
+    main = main,
+    xlab = xlab, ylab = ylab,
+    color = color, shape = color,
+    color_legend_title = color_legend_title,
+    shape_legend_title = shape_legend_title)
+}
+
+
 ggplot.table = function(table,
                         ...,
                         xlim = NULL, ylim = NULL,
                         main = NULL,
                         xlab = NULL, ylab = NULL,
-                        color = NULL,
-                        color_legend_title = NULL){
+                        se   = "default",
+                        color_bar        = "black",
+                        color_text       = "grey",
+                        color_confidence = "orange"){
+
+
+
   if(  length(dim(table)) == 1 ){
-    df.plot = data.frame( x = table )
-    df.plot$x.Freq = as.factor(df.plot)
-    plot = ggplot(data = df.plot, aes( x = x.Var1, y = x.Freq)) +
-           geom_bar( stat = "identity", width = .5, color = "black", alpha = .75) +
-           geom_errorbar( aes(ymin=x.Freq-sd, ymax=x.Freq+sd), width=0.1, colour="orange") +
-           geom_text(aes(label= x.Freq, y = min(x.Freq)), vjust= 1 , col = "grey")
-    plot
-
-  }else{
-
+    # DIM 1 checks
+    if(se = "default"){
+      Nj = table
+      probs = Nj/sum(table)
+      shift = sqrt( probs * ( 1 - probs) * Nj) * abs(qnorm(0.025))
+    }else if(se = "none"){
+      shift = 0
+      color_confidence = color_bar
+    }else if( is.numeric(se) ){
+      shift = se
+    }else{
+      errorCondition("Invalid se option. It shold be c('default','none') or a 'double' type. ")
     }
 
+    df.plot = data.frame( x = table )
+    df.plot$x.Var1 = as.factor(df.plot$x.Var1)
+    plot = ggplot(data = df.plot, aes( x = x.Var1, y = x.Freq)) +
+           geom_bar( stat = "identity", width = .5, color = color_bar, alpha = .75) +
+           geom_errorbar( aes(ymin= x.Freq - shift, ymax = x.Freq + shift),
+                          width = 0.1, colour = color_confidence) +
+           geom_text(aes(label= x.Freq, y = min(x.Freq)), vjust= 1 , col = color_text) +
+           xlab(xlab) + ylab(ylab) + ggtitle(main) + theme_minimal() +
+           scale_y_continuous(breaks = NULL) +
+           theme(text = element_text(family = "serif"))
 
-  plot + xlab(xlab) + ylab(ylab) + ggtitle(main) + theme_minimal() +
-    scale_y_continuous(breaks = NULL)
-    theme(text = element_text(family = "serif"))
+  }else if( length( dim(table)) == 2){
+    errorCondition("Ops, this must be implemented. ")
+  }else{
+    errorCondition("Incorect number of dimensions for the table. ")
+  }
+  return(plot)
 }
