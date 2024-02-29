@@ -1,0 +1,18 @@
+Package: gpplot
+Type: Package
+Version: 0.0.1
+Title: Create beautiful 'ggplot2' Objects in a Fast and Intuitive Syntax 
+Description: This is a set of tools for creating plots using 'ggplot2' and related packages. 
+  The 'ggplot2' style allows to create wonderful plots but its syntax of can be repetitive 
+  and sometimes counterintuitive. The package 'gpplot' try to solve this problem in standard cases 
+  related to Bayesian statistics.
+Authors@R: c(person("Giovanni", "Poli", role=c("aut", "cre"), email="giovanni.poli@unifi.it"))
+Maintainer: Giovanni Poli <giovanni.poli@unifi.it>
+LazyLoad: true
+Depends:
+    R(>= 3.5)
+Encoding: UTF-8
+Imports: 
+    ggdendro,
+    ggplot2,
+    scales
